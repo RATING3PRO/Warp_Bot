@@ -10,3 +10,6 @@ dist/
 build/
 *.egg-info/
 warp_*.conf
+warp_*.json
+wg_*.conf
+xray_*.json

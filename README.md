@@ -1,14 +1,15 @@
 # Warp Bot
 
-一个 Telegram Bot，用于申请 Cloudflare WARP WireGuard 配置文件，并把 `.conf` 文件发送给用户。
+一个 Telegram Bot，用于申请 Cloudflare WARP WireGuard / Xray 配置文件，并把配置文件发送给用户。
 
 > 注意：这里使用的是 Cloudflare WARP 客户端注册接口。它不是面向第三方公开承诺稳定性的 API，Cloudflare 变更接口后可能需要更新代码。
 
 ## 功能
 
-- `/warp` 自动生成 WireGuard X25519 密钥对
+- `/warp` 自动生成同一套 WARP 配置对应的 WireGuard `.conf` 和 Xray `.json` 两个文件
+- `/wg` 只生成 WireGuard `.conf` 配置文件
 - 向 Cloudflare WARP 注册设备
-- 渲染 WireGuard `.conf` 配置文件
+- 渲染 WireGuard `.conf` 或 Xray `.json` 配置文件
 - 通过 Telegram 文档消息返回配置
 - 可选 `ALLOWED_USER_IDS` 白名单限制使用者
 
@@ -53,7 +54,13 @@ Bot 启动后，在 Telegram 中发送：
 
 ```text
 /warp
+/wg
 ```
+
+`/warp` 返回的 Xray 配置默认监听：
+
+- SOCKS：`127.0.0.1:10808`
+- HTTP：`127.0.0.1:10809`
 
 ## 部署建议
 
