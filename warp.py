@@ -217,7 +217,7 @@ def render_wireguard_config(private_key: str, registration: dict[str, Any]) -> s
     )
 
 
-def render_xray_config(private_key: str, registration: dict[str, Any]) -> str:
+def build_xray_outbound(private_key: str, registration: dict[str, Any]) -> dict[str, Any]:
     settings = _extract_wireguard_settings(private_key, registration)
     wireguard_settings: dict[str, Any] = {
         "secretKey": settings["private_key"],
@@ -237,43 +237,15 @@ def render_xray_config(private_key: str, registration: dict[str, Any]) -> str:
     if settings["reserved"] is not None:
         wireguard_settings["reserved"] = settings["reserved"]
 
-    config = {
-        "log": {"loglevel": "warning"},
-        "dns": {
-            "servers": [
-                "1.1.1.1",
-                "1.0.0.1",
-                "2606:4700:4700::1111",
-                "2606:4700:4700::1001",
-            ]
-        },
-        "inbounds": [
-            {
-                "tag": "socks-in",
-                "listen": "127.0.0.1",
-                "port": 10808,
-                "protocol": "socks",
-                "settings": {"udp": True},
-            },
-            {
-                "tag": "http-in",
-                "listen": "127.0.0.1",
-                "port": 10809,
-                "protocol": "http",
-                "settings": {},
-            },
-        ],
-        "outbounds": [
-            {
-                "tag": "warp",
-                "protocol": "wireguard",
-                "settings": wireguard_settings,
-            },
-            {"tag": "direct", "protocol": "freedom"},
-            {"tag": "block", "protocol": "blackhole"},
-        ],
+    return {
+        "tag": "warp",
+        "protocol": "wireguard",
+        "settings": wireguard_settings,
     }
-    return f"{json.dumps(config, ensure_ascii=False, indent=2)}\n"
+
+
+def render_xray_config(private_key: str, registration: dict[str, Any]) -> str:
+    return f"{json.dumps(build_xray_outbound(private_key, registration), ensure_ascii=False, indent=2)}\n"
 
 
 def _safe_device_id(device_id: str) -> str:
@@ -315,10 +287,29 @@ def build_warp_config_bundle(
     )
 
 
+def build_xray_config_result(
+    private_key: str,
+    registration: dict[str, Any],
+    filename_prefix: str = "xray",
+) -> WarpConfigResult:
+    device_id = str(registration.get("id", "unknown"))
+    return WarpConfigResult(
+        config=render_xray_config(private_key, registration),
+        filename=f"{filename_prefix}_{_safe_device_id(device_id)}.json",
+        device_id=device_id,
+    )
+
+
 async def generate_wireguard_config(timeout: float = 20) -> WarpConfigResult:
     keypair = generate_wireguard_keypair()
     registration = await register_warp_device(keypair.public_key, timeout=timeout)
     return build_wireguard_config_result(keypair.private_key, registration)
+
+
+async def generate_xray_config(timeout: float = 20) -> WarpConfigResult:
+    keypair = generate_wireguard_keypair()
+    registration = await register_warp_device(keypair.public_key, timeout=timeout)
+    return build_xray_config_result(keypair.private_key, registration)
 
 
 async def generate_warp_config_bundle(timeout: float = 20) -> WarpConfigBundle:

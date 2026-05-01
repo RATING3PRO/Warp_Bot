@@ -8,9 +8,11 @@
 
 - `/warp` 自动生成同一套 WARP 配置对应的 WireGuard `.conf` 和 Xray `.json` 两个文件
 - `/wg` 只生成 WireGuard `.conf` 配置文件
+- `/xray` 只生成可粘贴到 Xray `outbounds` 数组中的 WireGuard outbound 对象
 - 向 Cloudflare WARP 注册设备
-- 渲染 WireGuard `.conf` 或 Xray `.json` 配置文件
-- 通过 Telegram 文档消息返回配置
+- 渲染 WireGuard `.conf` 或 Xray outbound `.json` 配置文件
+- 启动时向 Telegram 注册 `/warp`、`/wg`、`/xray`、`/help` 命令菜单
+- 通过 Telegram Markdown 代码块和文档消息同时返回配置
 - 可选 `ALLOWED_USER_IDS` 白名单限制使用者
 
 ## 准备
@@ -55,12 +57,10 @@ Bot 启动后，在 Telegram 中发送：
 ```text
 /warp
 /wg
+/xray
 ```
 
-`/warp` 返回的 Xray 配置默认监听：
-
-- SOCKS：`127.0.0.1:10808`
-- HTTP：`127.0.0.1:10809`
+`/warp` 和 `/xray` 返回的 Xray JSON 不是完整 Xray 客户端配置，只是 `outbounds` 数组中的一个 outbound 对象。
 
 ## 部署建议
 

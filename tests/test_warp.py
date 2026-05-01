@@ -4,7 +4,13 @@ import json
 
 import pytest
 
-from warp import WarpRegistrationError, build_warp_config_bundle, render_wireguard_config, render_xray_config
+from warp import (
+    WarpRegistrationError,
+    build_warp_config_bundle,
+    build_xray_config_result,
+    render_wireguard_config,
+    render_xray_config,
+)
 
 
 def test_render_wireguard_config() -> None:
@@ -55,18 +61,45 @@ def test_render_xray_config() -> None:
 
     config = json.loads(render_xray_config("private-key", registration))
 
-    assert config["inbounds"][0]["protocol"] == "socks"
-    assert config["inbounds"][0]["port"] == 10808
-    assert config["inbounds"][1]["protocol"] == "http"
-    assert config["inbounds"][1]["port"] == 10809
-    assert config["outbounds"][0]["protocol"] == "wireguard"
-    assert config["outbounds"][0]["settings"]["secretKey"] == "private-key"
-    assert config["outbounds"][0]["settings"]["reserved"] == [1, 2, 3]
-    assert config["outbounds"][0]["settings"]["address"] == [
+    assert "outbounds" not in config
+    assert "inbounds" not in config
+    assert config["tag"] == "warp"
+    assert config["protocol"] == "wireguard"
+    assert config["settings"]["secretKey"] == "private-key"
+    assert config["settings"]["reserved"] == [1, 2, 3]
+    assert config["settings"]["address"] == [
         "172.16.0.2/32",
         "2606:4700:110:8abc:1111:2222:3333:4444/128",
     ]
-    assert config["outbounds"][0]["settings"]["peers"][0]["endpoint"] == "engage.cloudflareclient.com:2408"
+    assert config["settings"]["peers"][0]["endpoint"] == "engage.cloudflareclient.com:2408"
+
+
+def test_build_xray_config_result() -> None:
+    registration = {
+        "id": "test-device",
+        "config": {
+            "interface": {
+                "addresses": {
+                    "v4": "172.16.0.2",
+                    "v6": "2606:4700:110:8abc:1111:2222:3333:4444",
+                }
+            },
+            "peers": [
+                {
+                    "public_key": "peer-public-key",
+                    "endpoint": {"host": "engage.cloudflareclient.com"},
+                }
+            ],
+            "client_id": "AQID",
+        },
+    }
+
+    result = build_xray_config_result("private-key", registration)
+    config = json.loads(result.config)
+
+    assert result.filename == "xray_test-device.json"
+    assert config["protocol"] == "wireguard"
+    assert config["settings"]["secretKey"] == "private-key"
 
 
 def test_build_warp_config_bundle_uses_same_registration() -> None:
@@ -96,7 +129,7 @@ def test_build_warp_config_bundle_uses_same_registration() -> None:
     assert bundle.wireguard.filename == "warp_test-device.conf"
     assert bundle.xray.filename == "warp_test-device.json"
     assert "PrivateKey = private-key" in bundle.wireguard.config
-    assert xray_config["outbounds"][0]["settings"]["secretKey"] == "private-key"
+    assert xray_config["settings"]["secretKey"] == "private-key"
 
 
 def test_render_wireguard_config_requires_peer() -> None:
