@@ -44,17 +44,6 @@ def _is_allowed(user_id: int | None, allowed_user_ids: Iterable[int]) -> bool:
     return not allowed or (user_id is not None and user_id in allowed)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.effective_message is None:
-        return
-
-    await update.effective_message.reply_text(
-        "/warp - WireGuard + Xray\n"
-        "/wg - WireGuard\n"
-        "/xray - Xray outbound",
-    )
-
-
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_message is None:
         return
@@ -187,7 +176,6 @@ async def register_bot_commands(application: Application) -> None:
             BotCommand("warp", "生成 WireGuard + Xray 配置"),
             BotCommand("wg", "生成 WireGuard 配置"),
             BotCommand("xray", "生成 Xray outbound 配置"),
-            BotCommand("start", "开始"),
             BotCommand("help", "查看命令"),
         ]
     )
@@ -207,7 +195,6 @@ def build_application() -> Application:
     application.bot_data["allowed_user_ids"] = allowed_user_ids
     application.bot_data["warp_api_timeout"] = warp_api_timeout
 
-    application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("warp", warp_command))
     application.add_handler(CommandHandler("wg", wg_command))
