@@ -25,18 +25,6 @@
 uv sync
 ```
 
-如果 Windows 上遇到 uv 用户级缓存目录权限问题，可禁用持久缓存：
-
-```powershell
-uv --no-cache sync
-```
-
-如果是 `uv lock --python 3.12 --verbose` 卡在初始化 managed Python，可直接改用：
-
-```powershell
-uv --no-cache lock --python 3.12
-```
-
 4. 创建 `.env`：
 
 ```powershell
@@ -91,7 +79,7 @@ docker run -d `
   -e TELEGRAM_BOT_TOKEN=你的BotToken `
   -e ALLOWED_USER_IDS=123456789,987654321 `
   -e WARP_API_TIMEOUT=20 `
-  ghcr.io/<owner>/<repo>:latest
+  ghcr.io/rating3pro/warp_bot:latest
 ```
 
 如果服务器访问 Telegram 或 Cloudflare 需要代理：
@@ -103,13 +91,13 @@ docker run -d `
   -e TELEGRAM_BOT_TOKEN=你的BotToken `
   -e HTTPS_PROXY=http://127.0.0.1:7890 `
   -e HTTP_PROXY=http://127.0.0.1:7890 `
-  ghcr.io/<owner>/<repo>:latest
+  ghcr.io/rating3pro/warp_bot:latest
 ```
 
 本仓库提供的 GitHub Workflow 会发布镜像到：
 
 ```text
-ghcr.io/<owner>/<repo>
+ghcr.io/rating3pro/warp_bot
 ```
 
 触发条件：
