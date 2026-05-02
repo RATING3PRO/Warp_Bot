@@ -18,13 +18,23 @@
 ## 准备
 
 1. 在 Telegram 找 `@BotFather` 创建 Bot，并拿到 token。
-2. 安装 Python 3.9+（推荐 Python 3.11+）。
+2. 安装 Python 3.12+ 和 [uv](https://docs.astral.sh/uv/)。
 3. 安装依赖：
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+uv sync
+```
+
+如果 Windows 上遇到 uv 用户级缓存目录权限问题，可禁用持久缓存：
+
+```powershell
+uv --no-cache sync
+```
+
+如果是 `uv lock --python 3.12 --verbose` 卡在初始化 managed Python，可直接改用：
+
+```powershell
+uv --no-cache lock --python 3.12
 ```
 
 4. 创建 `.env`：
@@ -48,8 +58,16 @@ WARP_API_TIMEOUT=20
 
 ## 运行
 
+### 本地运行
+
 ```powershell
-python bot.py
+uv run python bot.py
+```
+
+如果你使用了 `--no-cache` 同步，运行命令也保持一致：
+
+```powershell
+uv --no-cache run python bot.py
 ```
 
 Bot 启动后，在 Telegram 中发送：
@@ -62,6 +80,46 @@ Bot 启动后，在 Telegram 中发送：
 
 `/warp` 和 `/xray` 返回的 Xray JSON 不是完整 Xray 客户端配置，只是 `outbounds` 数组中的一个 outbound 对象。
 
+### Docker 运行
+
+Docker 镜像不需要 `.env` 文件，直接通过容器环境变量注入配置：
+
+```powershell
+docker run -d `
+  --name warp-bot `
+  --restart unless-stopped `
+  -e TELEGRAM_BOT_TOKEN=你的BotToken `
+  -e ALLOWED_USER_IDS=123456789,987654321 `
+  -e WARP_API_TIMEOUT=20 `
+  ghcr.io/<owner>/<repo>:latest
+```
+
+如果服务器访问 Telegram 或 Cloudflare 需要代理：
+
+```powershell
+docker run -d `
+  --name warp-bot `
+  --restart unless-stopped `
+  -e TELEGRAM_BOT_TOKEN=你的BotToken `
+  -e HTTPS_PROXY=http://127.0.0.1:7890 `
+  -e HTTP_PROXY=http://127.0.0.1:7890 `
+  ghcr.io/<owner>/<repo>:latest
+```
+
+本仓库提供的 GitHub Workflow 会发布镜像到：
+
+```text
+ghcr.io/<owner>/<repo>
+```
+
+触发条件：
+
+- push 到 `main`
+- push `v*.*.*` tag
+- 手动运行 `workflow_dispatch`
+
+发布前确认仓库的 Actions 权限允许写入 Packages。使用 workflow 默认的 `GITHUB_TOKEN`，不需要额外配置 GHCR token。
+
 ## 部署建议
 
 - 不要提交 `.env`。
@@ -71,5 +129,11 @@ Bot 启动后，在 Telegram 中发送：
 ## 测试
 
 ```powershell
-pytest
+uv run pytest
+```
+
+遇到 uv 缓存权限问题时：
+
+```powershell
+uv --no-cache run pytest
 ```
