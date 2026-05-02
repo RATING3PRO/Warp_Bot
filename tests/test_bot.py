@@ -1,7 +1,17 @@
 from __future__ import annotations
 
-from bot import TELEGRAM_MESSAGE_LIMIT, _markdown_config_messages
+import asyncio
+
+from bot import TELEGRAM_MESSAGE_LIMIT, _markdown_config_messages, _reply_unauthorized
 from warp import WarpConfigResult
+
+
+class FakeMessage:
+    def __init__(self) -> None:
+        self.texts: list[str] = []
+
+    async def reply_text(self, text: str) -> None:
+        self.texts.append(text)
 
 
 def test_markdown_config_messages_fit_telegram_limit() -> None:
@@ -28,3 +38,11 @@ def test_markdown_config_messages_include_filename_and_config() -> None:
     messages = _markdown_config_messages(result)
 
     assert messages == ["`wg_test.conf`\n```\n[Interface]\nPrivateKey = test\n\n```"]
+
+
+def test_reply_unauthorized_includes_user_id() -> None:
+    message = FakeMessage()
+
+    asyncio.run(_reply_unauthorized(message, 123456789))
+
+    assert message.texts == ["你没有权限使用这个 Bot。\n用户ID：123456789"]

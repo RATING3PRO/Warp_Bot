@@ -44,6 +44,11 @@ def _is_allowed(user_id: int | None, allowed_user_ids: Iterable[int]) -> bool:
     return not allowed or (user_id is not None and user_id in allowed)
 
 
+async def _reply_unauthorized(message, user_id: int | None) -> None:
+    user_id_text = str(user_id) if user_id is not None else "unknown"
+    await message.reply_text(f"你没有权限使用这个 Bot。\n用户ID：{user_id_text}")
+
+
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_message is None:
         return
@@ -94,8 +99,9 @@ async def warp_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     allowed_user_ids: set[int] = context.application.bot_data["allowed_user_ids"]
-    if not _is_allowed(update.effective_user.id if update.effective_user else None, allowed_user_ids):
-        await message.reply_text("你没有权限使用这个 Bot。")
+    user_id = update.effective_user.id if update.effective_user else None
+    if not _is_allowed(user_id, allowed_user_ids):
+        await _reply_unauthorized(message, user_id)
         return
 
     waiting = await message.reply_text("正在向 Cloudflare WARP 申请同配置文件，请稍候...")
@@ -122,8 +128,9 @@ async def wg_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         return
 
     allowed_user_ids: set[int] = context.application.bot_data["allowed_user_ids"]
-    if not _is_allowed(update.effective_user.id if update.effective_user else None, allowed_user_ids):
-        await message.reply_text("你没有权限使用这个 Bot。")
+    user_id = update.effective_user.id if update.effective_user else None
+    if not _is_allowed(user_id, allowed_user_ids):
+        await _reply_unauthorized(message, user_id)
         return
 
     waiting = await message.reply_text("正在向 Cloudflare WARP 申请 WireGuard 配置，请稍候...")
@@ -149,8 +156,9 @@ async def xray_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     allowed_user_ids: set[int] = context.application.bot_data["allowed_user_ids"]
-    if not _is_allowed(update.effective_user.id if update.effective_user else None, allowed_user_ids):
-        await message.reply_text("你没有权限使用这个 Bot。")
+    user_id = update.effective_user.id if update.effective_user else None
+    if not _is_allowed(user_id, allowed_user_ids):
+        await _reply_unauthorized(message, user_id)
         return
 
     waiting = await message.reply_text("正在向 Cloudflare WARP 申请 Xray outbound，请稍候...")

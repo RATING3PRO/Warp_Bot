@@ -21,14 +21,14 @@
 2. 安装 Python 3.12+ 和 [uv](https://docs.astral.sh/uv/)。
 3. 安装依赖：
 
-```powershell
+```bash
 uv sync
 ```
 
 4. 创建 `.env`：
 
-```powershell
-Copy-Item .env.example .env
+```bash
+cp .env.example .env
 ```
 
 然后编辑 `.env`：
@@ -48,14 +48,8 @@ WARP_API_TIMEOUT=20
 
 ### 本地运行
 
-```powershell
+```bash
 uv run python bot.py
-```
-
-如果你使用了 `--no-cache` 同步，运行命令也保持一致：
-
-```powershell
-uv --no-cache run python bot.py
 ```
 
 Bot 启动后，在 Telegram 中发送：
@@ -72,25 +66,25 @@ Bot 启动后，在 Telegram 中发送：
 
 Docker 镜像不需要 `.env` 文件，直接通过容器环境变量注入配置：
 
-```powershell
-docker run -d `
-  --name warp-bot `
-  --restart unless-stopped `
-  -e TELEGRAM_BOT_TOKEN=你的BotToken `
-  -e ALLOWED_USER_IDS=123456789,987654321 `
-  -e WARP_API_TIMEOUT=20 `
+```bash
+docker run -d \
+  --name warp-bot \
+  --restart unless-stopped \
+  -e TELEGRAM_BOT_TOKEN=你的BotToken \
+  -e ALLOWED_USER_IDS=123456789,987654321 \
+  -e WARP_API_TIMEOUT=20 \
   ghcr.io/rating3pro/warp_bot:latest
 ```
 
 如果服务器访问 Telegram 或 Cloudflare 需要代理：
 
-```powershell
-docker run -d `
-  --name warp-bot `
-  --restart unless-stopped `
-  -e TELEGRAM_BOT_TOKEN=你的BotToken `
-  -e HTTPS_PROXY=http://127.0.0.1:7890 `
-  -e HTTP_PROXY=http://127.0.0.1:7890 `
+```bash
+docker run -d \
+  --name warp-bot \
+  --restart unless-stopped \
+  -e TELEGRAM_BOT_TOKEN=你的BotToken \
+  -e HTTPS_PROXY=http://127.0.0.1:7890 \
+  -e HTTP_PROXY=http://127.0.0.1:7890 \
   ghcr.io/rating3pro/warp_bot:latest
 ```
 
@@ -116,12 +110,6 @@ ghcr.io/rating3pro/warp_bot
 
 ## 测试
 
-```powershell
+```bash
 uv run pytest
-```
-
-遇到 uv 缓存权限问题时：
-
-```powershell
-uv --no-cache run pytest
 ```
